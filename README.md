@@ -1,2 +1,2 @@
-# Y_Data_DL
- HW assignments for DL course
+# Y-data DL
+ Homework assignments for deep learning course
