@@ -16,24 +16,19 @@ class sixth_model(nn.Module):
     input : tensor of dimensions (batch_size*72*72*3)
     output: 2 tensor of dimension 1.(batchsize*144*144*3) 2. (batchsize*288*288*3)
 
-    1. 2d conv with 32 filters, kernel size 1*1; input(batch_size*72*72*3), output (batch_size*72*72*32)
+    1a.1 2d conv with 64 filters, kernel size 1*1; input(batch_size*72*72*3), output (batch_size*72*72*64)
+    1a.2 2d conv with 64 filters (frozen layer from VGG-16, layer 1.2), kernel size 3*3 input(batch_size*72*72*64), output (batch_size*72*72*64)
 
-    2. Dilation block:
-           2.1 2d dilated conv with 32 filters, kernel size 3*3 (dilation = 1, i.o.w same density); input(batch_size*72*72*32), output(batch_size*72*72*32)
-           2.2 2d dilated conv with 32 filters, kernel size 3*3 (dilation = 2, i.o.w 5*5), add padding=2; input(batch_size*72*72*32), output(batch_size*72*72*32)
-           2.3 2d dilated conv with 32 filters, kernel size 3*3 (dilation = 4, i.o.w 9*9), add padding=4; input(batch_size*72*72*32), output(batch_size*72*72*32)
-           2.4 Concatenate 2.1,2.2,2.3 into (batch_size*72*72*96)
-           2.5 Relu activation
-           2.6 2d conv with 32 filter, kernel size 3*3; input (batch_size*72*72*96), output (batch_size*72*72*32)
+    1b.1 2d conv with 64 filter, kernel size 3*3; input(batch_size*72*72*3), output (batch_size*72*72*64)
+    1b.2 2d conv with 64 filter, kernel size 3*3; input(batch_size*72*72*64), output (batch_size*72*72*64)
 
-    3. Dilation block (see 2)
-    4. Upsampling 2d; input (batchsize*72*72*32), output (batchsize*144*144*32)
+    2. Concatenation of 1a.2 and 1b.2 into (batch_size*72*72*128)
+    3. Pixel Shuffle; input (batchsize*72*72*128), output (batchsize*144*144*32)
+    4. 2d conv with 3 filters, kernel size 1*1; input (batch_size *144*144*32) output (batch_size * 144 * 144 * 3) - store this as putput x_1
 
-    5a. 2d conv with 3 filters (RGB), kernel size 1*1; input (batch_size*144*144*32), output (batchsize*144*144*3) - store this output as x_1
-    
-    5b. Dilation block (see 2)
-        5b1. Upsampling 2d; input (batchsize*144*144*32), output (batchsize*288*288*32)
-        5b2. 2d conv with 3 filters (RGB), kernel size 1*1; input (batch_size*288*288*32), output (batchsize*288*288*3) - store this output as x_2
+    5. 2d conv with 16 filters, kernel size 1*1; input (batch_size * 144 * 144 * 3) output (batch_size * 144 * 144 * 16)
+    5. Pixel Shuffle; input (batchsize*144*144*16) outut (batchsize*288*288*4) 
+    6. 2d conv with 3 filters, kernel size 1*1; input (batchsize*288*288*4) output (batchsize*288*288*3) - store this as output x_2    
     '''
     super().__init__()
   
